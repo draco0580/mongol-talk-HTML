@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mongol Talk — AI Voice Translator</title>
+<meta name="description" content="AI voice translator for Mongolian, Kazakh, and 100+ languages. Speak naturally, hear translations in real-time.">
+<meta property="og:title" content="Mongol Talk — AI Voice Translator">
+<meta property="og:description" content="AI voice translator for Mongolian, Kazakh, and 100+ languages.">
+<meta property="og:type" content="website">
+<!-- 📸 OG image: Replace with your 1200×630 social share image at ./assets/og-image.png -->
+<meta property="og:image" content="./assets/og-image.png">
+<meta name="theme-color" content="#0f0f12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════ */
+:root {
+  --bg:       #0f0f12;
+  --surface:  #16161b;
+  --surface2: #1c1c22;
+  --border:   rgba(255,255,255,0.06);
+  --text:     #e8e8ec;
+  --text-2:   #7c7c86;
+  --text-3:   #56565e;
+  --accent:   #5ab5ad;
+  --accent-bg:rgba(90,181,173,0.07);
+  --max-w:    1080px;
+  --py:       clamp(72px,10vh,120px);
+  --radius:   12px;
+  --radius-s: 8px;
+  --shadow:   0 2px 8px rgba(0,0,0,0.25);
+  --ease:     cubic-bezier(.25,.1,.25,1);
+  --dur:      200ms;
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+img{max-width:100%;display:block}
+ul{list-style:none}
+button{font-family:inherit;cursor:pointer}
+section[id]{scroll-margin-top:72px}
+
+/* ═══════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════ */
+h1{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;line-height:1.12;letter-spacing:-.02em;color:var(--text)}
+h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;line-height:1.18;letter-spacing:-.015em;color:var(--text)}
+h3{font-size:1.05rem;font-weight:600;line-height:1.35;color:var(--text)}
+.eyebrow{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:14px}
+.section-sub{font-size:1rem;color:var(--text-2);max-width:520px;margin-top:12px}
+
+/* ═══════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════ */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section{padding:var(--py) 0}
+
+/* ═══════════════════════════════════════
+   SCROLL REVEAL (subtle)
+   ═══════════════════════════════════════ */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.reveal.visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .reveal,.reveal.visible{opacity:1;transform:none;transition:none}
+}
+
+/* ═══════════════════════════════════════
+   NAV
+   ═══════════════════════════════════════ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:background var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+.nav.scrolled{background:rgba(15,15,18,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--border)}
+.nav-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav-brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;white-space:nowrap}
+.nav-brand-icon{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.nav-links{display:flex;align-items:center;gap:24px}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--text-2);transition:color var(--dur)}
+.nav-links a:hover,.nav-links a:focus-visible{color:var(--text)}
+.nav-cta{background:var(--accent);color:#0f0f12;padding:8px 18px;border-radius:50px;font-weight:600;font-size:.8rem;transition:opacity var(--dur);white-space:nowrap}
+.nav-cta:hover{opacity:.88}
+.nav-cta:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Language switcher */
+.lang-sw{position:relative}
+.lang-btn{background:transparent;border:1px solid var(--border);color:var(--text-2);padding:6px 12px;border-radius:50px;font-size:.78rem;font-weight:500;display:flex;align-items:center;gap:5px;transition:border-color var(--dur)}
+.lang-btn:hover{border-color:rgba(255,255,255,.15)}
+.lang-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lang-dd{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-s);padding:4px;min-width:160px;display:none;box-shadow:var(--shadow)}
+.lang-dd.open{display:block}
+.lang-opt{padding:8px 12px;border-radius:6px;font-size:.82rem;cursor:pointer;transition:background var(--dur);display:flex;align-items:center;gap:8px;color:var(--text-2)}
+.lang-opt:hover,.lang-opt:focus-visible{background:rgba(255,255,255,.05);color:var(--text)}
+.lang-opt.active{color:var(--accent)}
+
+/* Mobile nav */
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:1.4rem;padding:4px}
+.hamburger:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:768px){
+  .nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(15,15,18,.97);backdrop-filter:blur(12px);flex-direction:column;padding:20px 24px;gap:14px;border-bottom:1px solid var(--border)}
+  .nav-links.open{display:flex}
+  .hamburger{display:block}
+}
+
+/* ═══════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════ */
+.hero{min-height:100vh;min-height:100dvh;display:flex;align-items:center;padding:100px 0 60px;position:relative}
+.hero::after{content:'';position:absolute;top:0;right:0;width:50%;height:60%;background:radial-gradient(ellipse at 80% 20%,rgba(90,181,173,.04),transparent 60%);pointer-events:none}
+.hero-inner{display:flex;align-items:center;justify-content:space-between;gap:48px}
+.hero-text{flex:1;max-width:520px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);padding:6px 14px;border-radius:50px;font-size:.75rem;font-weight:500;color:var(--text-2);margin-bottom:24px}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.hero-sub{font-size:clamp(.95rem,2vw,1.1rem);color:var(--text-2);line-height:1.7;margin:20px 0 32px;max-width:460px}
+.hero-cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#0f0f12;padding:14px 28px;border-radius:50px;font-weight:600;font-size:.92rem;border:none;transition:opacity var(--dur)}
+.hero-cta:hover{opacity:.88}
+.hero-cta:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.hero-phone{flex-shrink:0}
+@media(max-width:768px){
+  .hero-inner{flex-direction:column;text-align:center}
+  .hero-text{max-width:100%}
+  .hero-sub{margin-left:auto;margin-right:auto}
+  .hero-phone{order:2}
+}
+
+/* ═══════════════════════════════════════
+   PHONE FRAME (reusable)
+   ═══════════════════════════════════════ */
+.phone{width:260px;height:530px;border-radius:36px;border:2px solid rgba(255,255,255,.08);background:#0c0c10;position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.phone-lg{width:280px;height:572px}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:100px;height:24px;background:#0c0c10;border-radius:0 0 14px 14px;z-index:2}
+.phone-screen{position:absolute;inset:2px;border-radius:34px;overflow:hidden;background:var(--surface)}
+.phone-screen img{width:100%;height:100%;object-fit:cover;position:relative;z-index:1}
+.phone-screen img.img-err{display:none}
+/* Placeholder — looks intentional even without real images */
+.screen-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#18181e,#1e1e28);color:var(--text-3);gap:8px;padding:20px;text-align:center;font-size:.78rem}
+.screen-ph-icon{font-size:1.8rem;opacity:.4}
+.screen-ph-hint{font-size:.62rem;opacity:.35;max-width:160px;line-height:1.4}
+@media(max-width:480px){
+  .phone{width:220px;height:449px;border-radius:30px}
+  .phone-lg{width:240px;height:490px}
+  .phone-screen{border-radius:28px}
+  .phone-notch{width:80px;height:20px;border-radius:0 0 10px 10px}
+}
+
+/* ═══════════════════════════════════════
+   SHOWCASE (App Preview)
+   ═══════════════════════════════════════ */
+.showcase{text-align:center}
+.showcase-tabs{display:flex;justify-content:center;gap:4px;margin-bottom:36px;flex-wrap:wrap}
+.showcase-tab{background:transparent;border:1px solid var(--border);color:var(--text-2);padding:8px 16px;border-radius:50px;font-size:.8rem;font-weight:500;transition:all var(--dur)}
+.showcase-tab:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
+.showcase-tab.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.showcase-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.showcase-phone{display:flex;justify-content:center;margin-bottom:24px}
+.showcase-caption{font-size:.92rem;color:var(--text-2);max-width:400px;margin:0 auto;min-height:2.6em}
+
+/* ═══════════════════════════════════════
+   BENEFITS
+   ═══════════════════════════════════════ */
+.benefits-grid{display:grid;gap:16px;margin-top:36px}
+@media(min-width:640px){
+  .benefits-grid{grid-template-columns:1fr 1fr}
+  .benefit-main{grid-column:1 / -1}
+}
+.benefit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;transition:border-color var(--dur)}
+.benefit-card:hover{border-color:rgba(255,255,255,.1)}
+.benefit-icon{font-size:1.4rem;margin-bottom:16px}
+.benefit-card h3{margin-bottom:8px}
+.benefit-card p{font-size:.9rem;color:var(--text-2);line-height:1.65;max-width:560px}
+.benefit-main{border-color:rgba(90,181,173,.12)}
+.benefit-main:hover{border-color:rgba(90,181,173,.22)}
+.benefit-main .benefit-icon{font-size:1.6rem}
+.benefit-main h3{font-size:1.2rem}
+
+/* ═══════════════════════════════════════
+   HOW IT WORKS
+   ═══════════════════════════════════════ */
+.steps{display:grid;grid-template-columns:1fr;gap:24px;margin-top:40px}
+@media(min-width:640px){.steps{grid-template-columns:repeat(3,1fr);gap:20px}}
+.step{position:relative}
+.step-num{font-size:.7rem;font-weight:700;color:var(--accent);width:28px;height:28px;border-radius:50%;border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.step h3{margin-bottom:6px}
+.step p{font-size:.88rem;color:var(--text-2);line-height:1.6}
+@media(min-width:640px){
+  .step:not(:last-child)::after{content:'';position:absolute;top:14px;left:calc(28px + 12px);right:-12px;height:1px;background:var(--border)}
+}
+
+/* ═══════════════════════════════════════
+   LANGUAGES
+   ═══════════════════════════════════════ */
+.lang-cloud{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:32px}
+.lang-pill{background:var(--surface);border:1px solid var(--border);padding:9px 18px;border-radius:50px;font-size:.84rem;font-weight:500;display:flex;align-items:center;gap:7px;transition:border-color var(--dur);color:var(--text-2)}
+.lang-pill:hover{border-color:rgba(255,255,255,.14)}
+.lang-pill .lf{font-size:1rem}
+.lang-pill.featured{border-color:rgba(90,181,173,.25);color:var(--accent)}
+.lang-more{color:var(--accent);border-color:rgba(90,181,173,.2);font-weight:600}
+
+/* ═══════════════════════════════════════
+   PRICING
+   ═══════════════════════════════════════ */
+.pricing-layout{display:grid;gap:16px;margin-top:40px}
+@media(min-width:680px){.pricing-layout{grid-template-columns:5fr 7fr}}
+.pricing-bottom{margin-top:16px}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;position:relative}
+.price-card.featured{border-color:rgba(90,181,173,.2)}
+.price-tag{display:inline-block;background:var(--accent-bg);color:var(--accent);font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:50px;margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em}
+.price-name{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+.price-desc{font-size:.85rem;color:var(--text-2);margin-bottom:20px;line-height:1.5}
+.price-features li{font-size:.84rem;color:var(--text-2);padding:5px 0;display:flex;align-items:center;gap:8px}
+.price-features li::before{content:'✓';color:var(--accent);font-weight:700;font-size:.75rem}
+.price-btn{display:block;width:100%;margin-top:20px;padding:12px;border-radius:50px;font-weight:600;font-size:.88rem;text-align:center;border:none;transition:opacity var(--dur)}
+.price-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.price-btn-primary{background:var(--accent);color:#0f0f12}
+.price-btn-primary:hover{opacity:.88}
+.price-btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.price-btn-outline:hover{border-color:rgba(255,255,255,.18)}
+.price-disclosure{font-size:.72rem;color:var(--text-3);margin-top:28px;line-height:1.65;max-width:640px;text-align:center;margin-left:auto;margin-right:auto}
+@media(max-width:679px){.pricing-bottom .price-card{margin-top:0}}
+
+/* ═══════════════════════════════════════
+   FAQ
+   ═══════════════════════════════════════ */
+.faq-list{max-width:680px;margin:32px auto 0}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item summary{padding:18px 0;font-size:.95rem;font-weight:600;color:var(--text);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;transition:color var(--dur)}
+.faq-item summary:hover{color:var(--accent)}
+.faq-item summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.faq-item summary::after{content:'+';font-size:1.1rem;font-weight:400;color:var(--text-3);flex-shrink:0;transition:transform var(--dur)}
+.faq-item[open] summary::after{transform:rotate(45deg)}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-answer{padding:0 0 18px;font-size:.88rem;color:var(--text-2);line-height:1.7;max-width:580px}
+
+/* ═══════════════════════════════════════
+   DOWNLOAD CTA
+   ═══════════════════════════════════════ */
+.dl-cta{text-align:center}
+.dl-cta h2{margin-bottom:12px}
+.dl-cta .section-sub{margin-left:auto;margin-right:auto;margin-bottom:32px}
+.dl-badges{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.badge-link{height:44px;border-radius:8px;overflow:hidden;transition:opacity var(--dur)}
+.badge-link:hover{opacity:.85}
+.badge-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge-link img{height:44px}
+.badge-ph{height:44px;padding:0 20px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text-2);background:var(--surface);white-space:nowrap}
+.badge-ph.disabled{opacity:.45;cursor:default}
+.dl-note{font-size:.72rem;color:var(--text-3);margin-top:20px}
+
+/* ═══════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════ */
+.footer{border-top:1px solid var(--border);padding:40px 0 28px}
+.footer-inner{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px}
+.footer-brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.88rem;color:var(--text-2)}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap}
+.footer-links a{font-size:.78rem;color:var(--text-3);transition:color var(--dur)}
+.footer-links a:hover,.footer-links a:focus-visible{color:var(--text-2)}
+.footer-links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.footer-disc{font-size:.68rem;color:var(--text-3);line-height:1.6;margin-top:16px;max-width:640px}
+.footer-copy{font-size:.68rem;color:var(--text-3);text-align:center;margin-top:24px}
+
+.hero-tagline{font-size:1.05rem;color:var(--accent);font-weight:600;margin:.75rem 0 1.25rem;letter-spacing:.01em}
+.diff-banner{background:linear-gradient(135deg,#1a1200,#2d1f00);border:1.5px solid #f5a623;padding:1.25rem 1.5rem;border-radius:12px;margin:2rem 0;display:flex;align-items:flex-start;gap:1rem}
+.diff-banner-icon{font-size:1.8rem;flex-shrink:0}
+.diff-banner-text h4{color:#f5a623;font-size:1rem;margin:0 0 .4rem;font-weight:700}
+.diff-banner-text p{color:#e8dfc8;font-size:.9rem;margin:0;line-height:1.6}
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
+.testimonial-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.75rem;display:flex;flex-direction:column;gap:.75rem;transition:transform var(--dur),box-shadow var(--dur)}
+.testimonial-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.15)}
+.testimonial-stars{color:#f5a623;font-size:1.1rem;letter-spacing:2px}
+.testimonial-text{color:var(--text-2);font-size:.95rem;line-height:1.7;font-style:italic;flex:1}
+.testimonial-author{color:var(--text-3);font-size:.85rem;font-weight:600}
+.price-no-features{margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)}
+.price-no{opacity:.45;text-decoration:line-through}
+.price-no::before{content:"✕  ";color:#e74c3c;text-decoration:none;display:inline-block}
+.footnote-section{background:var(--bg);border-top:1px solid var(--border);padding:1.5rem 0 .5rem}
+.footnote-item{font-size:.8rem;color:var(--text-3);line-height:1.7;margin-bottom:.75rem}
+.footnote-item a{color:var(--accent);text-decoration:underline}
+
+/* ===== TRIAL BANNER ===== */
+.trial-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    z-index: 1001;
+    background: linear-gradient(90deg, rgba(90,181,173,0.15) 0%, rgba(90,181,173,0.08) 100%);
+    border-bottom: 1px solid rgba(90,181,173,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.trial-text {
+    margin: 0;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .3px;
+    line-height: 1;
+}
+/* Nav sits directly below banner */
+nav {
+    top: 32px !important;
+}
+/* Hero content clears banner (32px) + nav (~64px) + breathing room (24px) */
+.hero {
+    padding-top: 124px !important;
+}
+@keyframes bannerFadeIn {
+    from { opacity: 0; transform: translateY(-100%); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Shift nav down to sit below banner */
+
+
+/* Shift hero padding to account for banner + nav */
+
+
+/* ===== CORE FEATURES SECTION ===== */
+.core-features {
+    padding: 80px 0;
+    background: var(--bg);
+}
+.core-features .section-title {
+    color: var(--text);
+}
+.core-features .section-subtitle {
+    color: var(--text-2);
+}
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+}
+.feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 36px 28px;
+    border-radius: 16px;
+    text-align: center;
+    transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    opacity: 0;
+    animation: feadeInUp .6s ease forwards;
+}
+.feature-card:nth-child(1) { animation-delay: .1s; }
+.feature-card:nth-child(2) { animation-delay: .22s; }
+.feature-card:nth-child(3) { animation-delay: .34s; }
+.feature-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(90,181,173,.3);
+    box-shadow: 0 12px 40px rgba(90,181,173,.08);
+}
+.feature-icon {
+    font-size: 2.4rem;
+    margin-bottom: 16px;
+    display: block;
+}
+.feature-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+.feature-desc {
+    font-size: .85rem;
+    line-height: 1.65;
+    color: var(--text-2);
+}
+@keyframes feadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== HERO PHONE SHOWCASE ===== */
+.hero-phone-showcase {
+    margin-top: 0px;
+}
+.screen-gallery {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+.screen-item {
+    flex: 0 0 220px;
+    animation: phoneFloat 3.5s ease-in-out infinite;
+    transition: transform .3s ease;
+}
+.screen-item:nth-child(2) { animation-delay: .4s; }
+.screen-item:nth-child(3) { animation-delay: .8s; }
+.screen-item:hover { transform: translateY(-12px) scale(1.04); }
+.phone-screen {
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
+}
+@keyframes phoneFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+}
+@media (max-width: 679px) {
+    .screen-item { flex: 0 0 150px; }
+    
+    
+    .trial-text { font-size: .75rem; }
+}
+
+/* ===== CAROUSEL ===== */
+.screen-carousel {
+    position: relative;
+    margin-top: 0px;
+    max-width: 340px;
+    margin-left: auto;
+    margin-right: auto;
+    user-select: none;
+}
+.carousel-viewport {
+    overflow: hidden;
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.07);
+}
+.carousel-track {
+    display: flex;
+    transition: transform .38s cubic-bezier(.4,0,.2,1);
+    will-change: transform;
+}
+.carousel-slide {
+    flex: 0 0 100%;
+    width: 100%;
+}
+.carousel-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 28px;
+}
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(90,181,173,.18);
+    border: 1px solid rgba(90,181,173,.3);
+    color: var(--accent);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s, transform .2s;
+    backdrop-filter: blur(6px);
+}
+.carousel-btn:hover {
+    background: rgba(90,181,173,.35);
+    transform: translateY(-50%) scale(1.1);
+}
+.carousel-btn.prev { left: -20px; }
+.carousel-btn.next { right: -20px; }
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+.cdot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+.cdot.active {
+    background: var(--accent);
+    transform: scale(1.3);
+}
+/* Brand icon */
+.brand-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+    object-fit: cover;
+}
+/* Promo art */
+.promo-art-section {
+    padding: 60px 0;
+    background: var(--surface);
+}
+.promo-art-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-top: 0;
+}
+.promo-art-item {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform .3s ease;
+}
+.promo-art-item:hover { transform: translateY(-6px); }
+.promo-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+@media (max-width: 500px) {
+    .carousel-btn.prev { left: -14px; }
+    .carousel-btn.next { right: -14px; }
+    .screen-carousel { max-width: 280px; }
+}
+
+</style>
+</head>
+<body>
+    <!-- 24hr Free Trial Banner -->
+    <div class="trial-banner" id="trial-banner">
+        <div class="container">
+            <p class="trial-text" data-i18n="trial_offer">🎁 首次下載，享24小時無限翻譯 — 完全免費</p>
+        </div>
+    </div>
+
+<!-- ════════════════════════════════════════
+     NAV
+     ════════════════════════════════════════ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand"><img src="assets/icon.png" alt="" class="brand-icon">Mongol Talk</a>
+    <button class="hamburger" id="ham" aria-label="Menu">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#features" data-i18n="nav_feat">Features</a>
+      <a href="#how" data-i18n="nav_how">How It Works</a>
+      <a href="#pricing" data-i18n="nav_price">Pricing</a>
+      <a href="#faq" data-i18n="nav_faq">FAQ</a>
+      <div class="lang-sw">
+        <button class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false">🌐 <span id="curLang">EN</span> ▾</button>
+        <div class="lang-dd" id="langDd" role="listbox">
+          <div class="lang-opt" data-lang="en" role="option">🇺🇸 English</div>
+          <div class="lang-opt" data-lang="zh-TW" role="option">🇹🇼 繁體中文</div>
+          <div class="lang-opt" data-lang="zh-CN" role="option">🇨🇳 简体中文</div>
+          <div class="lang-opt" data-lang="mn" role="option">🇲🇳 Монгол</div>
+          <div class="lang-opt" data-lang="kk" role="option">🇰🇿 Қазақша</div>
+          <div class="lang-opt" data-lang="ko" role="option">🇰🇷 한국어</div>
+          <div class="lang-opt" data-lang="ja" role="option">🇯🇵 日本語</div>
+        </div>
+      </div>
+      <!-- 🔗 REPLACE: href → your App Store URL -->
+      <a href="#download" class="nav-cta" data-i18n="nav_dl">Download for iOS</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════ -->
+<section class="hero" id="top">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge"><span class="hero-badge-dot"></span><span data-i18n="h_badge">AI Voice Translator</span></div>
+      <h1><span data-i18n="h_title">Translate conversations,</span><br><span data-i18n="h_hl" style="color:var(--accent)">not just words.</span></h1>
+      <p class="hero-sub" data-i18n="h_sub">Speak in your language and hear it in theirs. AI-powered voice translation for Mongolian, Kazakh, and 100+ languages.</p>
+                <p class="hero-tagline">專為蒙古及哈薩克旅遊而設。主流 App 做不到的語音功能，我們做得到。</p>
+      <!-- 🔗 REPLACE: href → your App Store URL -->
+      <a href="#download" class="hero-cta" data-i18n="h_cta">Download for iOS</a>
+    </div>
+    <div class="hero-phone">
+      <div class="phone phone-lg">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <!--
+            📸 HERO PHONE IMAGE
+            File:    ./assets/hero-phone-main.png
+            Size:    390 × 844 px (iPhone 14/15 aspect)
+            Content: Main translation screen, Mongolian ↔ English
+            How:     Drop file at path above — it loads automatically.
+          -->
+          <img src="./assets/hero-phone-main.png" alt="Mongol Talk main screen" loading="eager" onerror="this.classList.add('img-err')">
+          <div class="screen-carousel" id="screenCarousel">
+                <button class="carousel-btn prev" id="prevBtn" aria-label="Previous">&#8249;</button>
+                <div class="carousel-viewport">
+                    <div class="carousel-track" id="carouselTrack">
+                        <div class="carousel-slide"><img src="assets/screen1.png" alt="翻譯主畫面" class="carousel-img"></div>
+                        <div class="carousel-slide"><img src="assets/screen2.png" alt="語音輸入" class="carousel-img"></div>
+                        <div class="carousel-slide"><img src="assets/screen3.png" alt="翻譯歷史" class="carousel-img"></div>
+                        <div class="carousel-slide"><img src="assets/screen4.png" alt="收藏功能" class="carousel-img"></div>
+                    </div>
+                </div>
+                <button class="carousel-btn next" id="nextBtn" aria-label="Next">&#8250;</button>
+                <div class="carousel-dots" id="carouselDots">
+                    <span class="cdot active" onclick="goSlide(0)"></span>
+                    <span class="cdot" onclick="goSlide(1)"></span>
+                    <span class="cdot" onclick="goSlide(2)"></span>
+                    <span class="cdot" onclick="goSlide(3)"></span>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     APP SHOWCASE (screen gallery)
+     ════════════════════════════════════════ -->
+    <!-- Core Features Section -->
+    <section class="section core-features reveal" id="core-features">
+        <div class="container">
+            <h2 class="section-title" data-i18n="core_features_title">為什麼旅行者選擇我們？</h2>
+            <p class="section-subtitle" data-i18n="core_features_subtitle">主流 App 做不到的，我們做到了</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🗣️</div>
+                    <h3 class="feature-title" data-i18n="feature_tts_title">蒙古語語音輸出（TTS）</h3>
+                    <p class="feature-desc" data-i18n="feature_tts_desc">⭐ 市面上罕見的功能 — 即時聽到蒙古語發音，連眾多翻譯APP都做不到</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌏</div>
+                    <h3 class="feature-title" data-i18n="feature_optimization_title">中亞地區深度優化</h3>
+                    <p class="feature-desc" data-i18n="feature_optimization_desc">專門針對蒙古、哈薩克語言調校，翻譯準確度超越一般通用翻譯工具</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📵</div>
+                    <h3 class="feature-title" data-i18n="feature_offline_title">旅行專用設計</h3>
+                    <p class="feature-desc" data-i18n="feature_offline_desc">專為偏遠地區優化，即使網速小或離線也能順暢使用</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promo Art Section -->
+    <section class="section promo-art-section reveal" id="promo">
+        <div class="container">
+            <div class="promo-art-grid">
+                <div class="promo-art-item">
+                    <img src="assets/promo1.png" alt="旅行對話 - Mongol Talk" class="promo-img" loading="lazy">
+                </div>
+                <div class="promo-art-item">
+                    <img src="assets/promo2.png" alt="與當地人溝通 - Mongol Talk" class="promo-img" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- ════════════════════════════════════════
+     BENEFITS
+     ════════════════════════════════════════ -->
+<section class="section" id="features">
+  <div class="container">
+
+      <div class="diff-banner reveal">
+        <div class="diff-banner-icon">💡</div>
+        <div class="diff-banner-text">
+          <h4 data-i18n="compare_title">眾多翻譯APP做不到的。我們做得到。</h4>
+          <p data-i18n="compare_desc">眾多翻譯APP至今不支援蒙古語語音輸出。Mongol Talk 利用神經語音技術，能直接播放蒙古語翻譯結果——真正解決旅行溝通障礙。</p>
+        </div>
+      </div>
+          <p class="eyebrow reveal" data-i18n="b_ey">Why Mongol Talk</p>
+    <h2 class="reveal" data-i18n="b_title">Built for languages others overlook</h2>
+    <div class="benefits-grid">
+      <div class="benefit-card benefit-main reveal">
+        <div class="benefit-icon">🌏</div>
+        <h3 data-i18n="b_m_t">Mongolian &amp; Kazakh, front and center</h3>
+        <p data-i18n="b_m_d">Most translation apps treat Mongolian and Kazakh as afterthoughts. We built Mongol Talk specifically for these languages — with dedicated neural voice models and speech recognition tuned for Cyrillic Mongolian and Kazakh.</p>
+      </div>
+      <div class="benefit-card reveal">
+        <div class="benefit-icon">🔉</div>
+        <h3 data-i18n="b_1_t">Voices that sound natural</h3>
+        <p data-i18n="b_1_d">Male and female neural voices for each language. Adjust playback speed to match your own pace.</p>
+      </div>
+      <div class="benefit-card reveal">
+        <div class="benefit-icon">🔒</div>
+        <h3 data-i18n="b_2_t">Private by design</h3>
+        <p data-i18n="b_2_d">Voice audio is processed for translation purposes only. No account required to start. See our Privacy Policy for details.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     HOW IT WORKS
+     ════════════════════════════════════════ -->
+<section class="section" id="how">
+  <div class="container">
+    <p class="eyebrow reveal" data-i18n="w_ey">How It Works</p>
+    <h2 class="reveal" data-i18n="w_title">Three steps, one conversation</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h3 data-i18n="w_1_t">Choose languages</h3>
+        <p data-i18n="w_1_d">Pick your source and target from 100+ supported languages, including Mongolian and Kazakh.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <h3 data-i18n="w_2_t">Speak naturally</h3>
+        <p data-i18n="w_2_d">Tap the microphone and talk. AI speech recognition transcribes your voice in real-time.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <h3 data-i18n="w_3_t">Hear the translation</h3>
+        <p data-i18n="w_3_d">The translation is spoken aloud in a natural-sounding neural voice. Play it for anyone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     LANGUAGES
+     ════════════════════════════════════════ -->
+<section class="section" id="languages">
+  <div class="container" style="text-align:center">
+    <p class="eyebrow reveal" data-i18n="l_ey">Languages</p>
+    <h2 class="reveal" data-i18n="l_title">100+ languages, one app</h2>
+    <p class="section-sub reveal" style="margin-left:auto;margin-right:auto" data-i18n="l_sub">Focused on Central and East Asian languages that are underserved by mainstream translators.</p>
+    <p class="section-sub reveal" style="margin-left:auto;margin-right:auto;margin-top:16px;font-size:.85rem" data-i18n="l_ui_title">App Interface Languages</p>
+        <div class="lang-cloud reveal">
+          <div class="lang-pill featured"><span class="lf" style="width:20px;height:14px;background:url('https://flagcdn.com/w20/hk.png') no-repeat center/cover"></span>繁體中文（香港）</div>
+          <div class="lang-pill featured"><span class="lf gb"></span>English</div>
+          <div class="lang-pill featured"><span class="lf jp"></span>日本語</div>
+          <div class="lang-pill featured"><span class="lf kr"></span>한국어</div>
+          <div class="lang-pill featured"><span class="lf ru"></span>Русский</div>
+          <div class="lang-pill featured"><span class="lf fr"></span>Français</div>
+          <div class="lang-pill featured"><span class="lf de"></span>Deutsch</div>
+          <div class="lang-pill featured"><span class="lf es"></span>Español</div>
+          <div class="lang-pill featured"><span class="lf pt"></span>Português</div>
+          <div class="lang-pill featured"><span class="lf it"></span>Italiano</div>
+          <div class="lang-pill featured"><span class="lf sa"></span>العربية</div>
+          <div class="lang-pill featured"><span class="lf th"></span>ภาษาไทย</div>
+          <div class="lang-pill featured"><span class="lf vn"></span>Tiếng Việt</div>
+          <div class="lang-pill featured"><span class="lf id"></span>Bahasa Indonesia</div>
+          <div class="lang-pill featured"><span class="lf mn"></span>Монгол хэл</div>
+          <div class="lang-pill featured"><span class="lf cn"></span>简体中文</div>
+          <div class="lang-pill featured"><span class="lf kz"></span>Қазақша</div>
+        </div>
+        </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     PRICING
+     ════════════════════════════════════════ -->
+<section class="section" id="testimonials" style="background:var(--surface)">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:2.5rem">
+      <p class="eyebrow reveal" data-i18n="t_ey">旅行者心聲</p>
+      <h2 class="reveal" data-i18n="t_title">旅行者的一致推介</h2>
+    </div>
+    <div class="testimonials-grid reveal">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">「終於找到一個可以真正講到蒙古話的 App！去旅行問路買外隻方便好多。」</p>
+        <p class="testimonial-author">— Alex，冒險愛好者</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">「語音輸出好自然，不是那種機械聲。在哈薩克用來同當地人溝通完全沒問題。」</p>
+        <p class="testimonial-author">— Sarah，數位遊民</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">「這個地區用這個 App 好過用一般翻譯APP。個蒙古文語音輸出真係救星。」</p>
+        <p class="testimonial-author">— Ken，旅遊常客</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="container">
+    <div style="text-align:center">
+      <p class="eyebrow reveal" data-i18n="p_ey">Pricing</p>
+      <h2 class="reveal" data-i18n="p_title">Start free, upgrade anytime</h2>
+      <p class="section-sub reveal" style="margin-left:auto;margin-right:auto" data-i18n="p_sub">Basic features are free. Premium unlocks the full experience.</p>
+    </div>
+    <div class="pricing-layout reveal">
+      <div class="price-card">
+        <div class="price-name" data-i18n="p_free">Free</div>
+        <p class="price-desc" data-i18n="p_free_d">Get started with core translation features at no cost.</p>
+        <ul class="price-features">
+          <li data-i18n="p_f1">Voice translation</li>
+          <li data-i18n="p_f2">Limited daily usage</li>
+          <li data-i18n="p_f3">Standard voice speed</li>
+        </ul>
+          <ul class="price-features price-no-features">
+            <li class="price-no" data-i18n="p_fx1">無限次翻譯</li>
+            <li class="price-no" data-i18n="p_fx2">全部 100+ 種語言</li>
+            <li class="price-no" data-i18n="p_fx3">優先 AI 處理</li>
+          </ul>
+        <a href="#download" class="price-btn price-btn-outline" data-i18n="p_free_btn">Get Started</a>
+      </div>
+      <div class="price-card featured">
+        <span class="price-tag" data-i18n="p_rec">Recommended</span>
+        <div class="price-name" data-i18n="p_prem">Premium</div>
+        <p class="price-desc" data-i18n="p_prem_d">Unlimited translations, all languages, adjustable speed, and priority processing. Available as weekly, monthly, or yearly subscription.</p>
+        <ul class="price-features">
+          <li data-i18n="p_p1">Unlimited translations</li>
+          <li data-i18n="p_p2">All 100+ languages</li>
+          <li data-i18n="p_p3">Adjustable voice speed</li>
+          <li data-i18n="p_p4">Priority AI processing</li>
+        </ul>
+        <!-- 🔗 REPLACE: href → your App Store URL -->
+        <a href="#download" class="price-btn price-btn-primary" data-i18n="p_prem_btn">View Plans in App</a>
+      </div>
+    </div>
+    <div class="pricing-bottom reveal">
+      <div class="price-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div style="flex:1;min-width:200px">
+          <div class="price-name" data-i18n="p_life">Lifetime</div>
+          <p style="font-size:.85rem;color:var(--text-2);margin-top:4px" data-i18n="p_life_d">One-time purchase. All premium features, forever.</p>
+        </div>
+        <a href="#download" class="price-btn price-btn-outline" style="width:auto;padding:10px 24px" data-i18n="p_life_btn">Learn More</a>
+      </div>
+    </div>
+    <p class="price-disclosure reveal" data-i18n="p_disc">Some features require a premium subscription. Prices are displayed in the app before purchase. Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in your device settings.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     FAQ
+     ════════════════════════════════════════ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div style="text-align:center">
+      <p class="eyebrow reveal" data-i18n="fq_ey">FAQ</p>
+      <h2 class="reveal" data-i18n="fq_title">Common questions</h2>
+    </div>
+    <div class="faq-list reveal">
+      <details class="faq-item"><summary data-i18n="fq_q1">Is the app free to use?</summary><p class="faq-answer" data-i18n="fq_a1">Mongol Talk is free to download with basic translation features. Premium features such as unlimited translations and adjustable voice speed are available through in-app subscription. Pricing is shown in the app before any purchase.</p></details>
+      <details class="faq-item"><summary data-i18n="fq_q2">Which languages are supported?</summary><p class="faq-answer" data-i18n="fq_a2">We support Mongolian, Kazakh, English, Chinese, Japanese, Korean, Russian, Turkish, French, German, Spanish, and more. The complete list is available in the app.</p></details>
+      <details class="faq-item"><summary data-i18n="fq_q3">How does voice translation work?</summary><p class="faq-answer" data-i18n="fq_a3">The app uses AI speech recognition to transcribe your voice, neural machine translation to convert the text, and text-to-speech to read the result aloud. All three steps happen within seconds.</p></details>
+      <details class="faq-item"><summary data-i18n="fq_q4">How is my data handled?</summary><p class="faq-answer" data-i18n="fq_a4">Voice audio is sent to cloud AI services for translation processing. Translation history is stored locally on your device. Please review our Privacy Policy for full details on data handling.</p></details>
+      <details class="faq-item"><summary data-i18n="fq_q5">How do I manage or cancel my subscription?</summary><p class="faq-answer" data-i18n="fq_a5">You can manage or cancel your subscription anytime through your device's Settings &gt; Apple ID &gt; Subscriptions. Changes take effect at the end of the current billing period.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     DOWNLOAD CTA
+     ════════════════════════════════════════ -->
+<section class="section dl-cta" id="download">
+  <div class="container reveal">
+    <h2 data-i18n="d_title">Try Mongol Talk today</h2>
+    <p class="section-sub" data-i18n="d_sub">Free to download. Start translating right away.</p>
+    <div class="dl-badges">
+      <!--
+        📸 APP STORE BADGE
+        File: ./assets/badge-appstore.svg
+        Official badge: https://developer.apple.com/app-store/marketing/guidelines/
+        How:  Replace <div class="badge-ph"> with:
+              <a href="YOUR_APP_STORE_URL" class="badge-link"><img src="./assets/badge-appstore.svg" alt="Download on the App Store"></a>
+      -->
+      <div class="badge-ph"><span>🍎</span><span data-i18n="d_ios">Download on the App Store</span></div>
+      <!--
+        📸 GOOGLE PLAY BADGE — hidden until Android launches
+        File: ./assets/badge-playstore.svg
+        How:  When ready, replace <div class="badge-ph disabled"> with:
+              <a href="YOUR_PLAY_STORE_URL" class="badge-link"><img src="./assets/badge-playstore.svg" alt="Get it on Google Play"></a>
+      -->
+      <div class="badge-ph disabled"><span>▶️</span><span data-i18n="d_android">Android — coming soon</span></div>
+    </div>
+    <p class="dl-note" data-i18n="d_note">Requires iOS 16.0 or later.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand"><span>🗣️</span>Mongol Talk</div>
+      <div class="footer-links">
+        <!-- 🔗 REPLACE: href → your actual pages / emails -->
+        <a href="https://draco0580.github.io/mongol-talk-HTML/" data-i18n="ft_priv">Privacy Policy</a>
+        <a href="#" data-i18n="ft_terms">Terms of Use</a>
+        <a href="https://draco0580.github.io/mongol-talk-HTML/" data-i18n="ft_support">Support</a>
+        <a href="https://draco0580.github.io/mongol-talk-HTML/" data-i18n="ft_contact">Contact</a>
+      </div>
+    </div>
+    <p class="footer-disc" data-i18n="ft_disc">Some features require a premium subscription. Prices and availability are shown in the app before purchase. Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period.</p>
+    <p class="footer-copy">&copy; 2026 Mongol Talk. All rights reserved.</p>
+  </div>
+  <div class="footnote-section" id="footnotes">
+    <div class="container">
+      <p class="footnote-item" id="fn-star"><sup>★</sup> 支援的語言總數取決於您裝置的操作系統版本及網絡連線狀況。部分語言模型需要開啟語音合成（TTS）服務。完整語言列表請在 App 內查看。</p>
+      <p class="footnote-item">⚠️ <strong>免責聲明</strong>：Mongol Talk 不負責任何因翻譯不準確、語音輸出差異或語言楚境察異而導致的直接或間接損失。翻譯結果僅供參考，不構成專業建議。重要善务或法律事項請寄稿專業翻譯。</p>
+      <p class="footnote-item">用户將自起填寫任何個人資料。Mongol Talk 不收集、不導出任何個人識別資訊。詳情請展閱 <a href="https://draco0580.github.io/mongol-talk-HTML/" target="_blank">隐私權政策</a>。</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ════════════════════════════════════════
+     TRANSLATIONS & LOGIC
+     ════════════════════════════════════════ -->
+<script>
+const SCREENS={
+  translate:{img:'./assets/screen-translate.png',cap:'s_c1',label:'Translate',hint:'assets/screen-translate.png'},
+  voice:{img:'./assets/screen-voice.png',cap:'s_c2',label:'Voice',hint:'assets/screen-voice.png'},
+  history:{img:'./assets/screen-history.png',cap:'s_c3',label:'History',hint:'assets/screen-history.png'},
+  favorites:{img:'./assets/screen-favorites.png',cap:'s_c4',label:'Favorites',hint:'assets/screen-favorites.png'}
+};
+
+const T={
+en: {nav_feat: "Features", nav_how: "How It Works", nav_price: "Pricing", nav_faq: "FAQ", nav_dl: "Download for iOS", h_sub: "Speak in your language and hear it in theirs. AI-powered voice translation for Mongolian, Kazakh, and 100+ languages.", b_ey: "Why Mongol Talk", b_title: "Built for languages others overlook", b_m_t: "Mongolian & Kazakh, front and center", b_m_d: "Most translation apps treat Mongolian and Kazakh as afterthoughts. We built Mongol Talk specifically for these languages.", b_n_t: "Voices that sound natural", b_n_d: "Male and female neural voices for each language. Adjust playback speed to match your own pace.", b_p_t: "Private by design", b_p_d: "Voice audio is processed for translation purposes only. No account required to start.", w_ey: "How It Works", w_title: "Three steps, one conversation", w_1_t: "Choose languages", w_1_d: "Pick your source and target from 100+ supported languages, including Mongolian and Kazakh.", w_2_t: "Speak naturally", w_2_d: "Tap the microphone and talk. AI speech recognition transcribes your voice in real-time.", w_3_t: "Hear the translation", w_3_d: "The translation is spoken aloud in a natural-sounding neural voice.", l_ey: "Languages", l_title: "100+ languages, one app", l_sub: "Focused on Central and East Asian languages that are underserved by mainstream translators.", l_ui_title: "Interface Languages", t_ey: "Travelers' Voice", t_title: "Highly Recommended by Travelers", t1_text: "Finally found an app that actually speaks Mongolian! Makes asking directions and shopping so much easier.", t1_name: "Alex, Adventure Enthusiast", t2_text: "The voice output is so natural, not mechanical at all. Had no trouble communicating with locals in Kazakhstan.", t2_name: "Sarah, Digital Nomad", t3_text: "In this region, this app works way better than general translation apps. The Mongolian voice output is a lifesaver.", t3_name: "Ken, Frequent Traveler", p_ey: "Pricing", p_title: "Start free, upgrade anytime", p_sub: "Basic features are free. Premium unlocks the full experience.", p1_t: "Free", p1_d: "Get started with core translation features at no cost.", p1_b: "Get Started", p2_t: "Premium", p2_d: "Unlimited translations, all languages, adjustable speed, and priority processing.", p2_b: "View Plans in App", p3_t: "Lifetime", p3_d: "One-time purchase. All premium features, forever.", p3_b: "Learn More", f_ey: "FAQ", f_title: "Common questions", d_title: "Try Mongol Talk today", d_apple: "Download on the App Store", d_android: "Android — coming soon", d_note: "Requires iOS 16.0 or later.", ft_priv: "Privacy Policy", ft_terms: "Terms of Use", ft_support: "Support", ft_contact: "Contact", ft_disc: "Some features require a premium subscription.", _meta_desc: "AI voice translator for Mongolian, Kazakh, and 100+ languages.", _meta_title: "Mongol Talk — AI Voice Translator", compare_title: "What other apps can't do, we do.", compare_desc: "Most translation apps still don't support Mongolian voice output. Mongol Talk uses neural voice technology to solve travel communication barriers."},
+
+"zh-TW":{
+      "trial_offer": "🎁 首次下載，享24小時無限翻譯 — 完全免費",
+      "core_features_title": "為什麼旅行者選擇我們？",
+      "core_features_subtitle": "主流 App 做不到的，我們做到了",
+      "feature_tts_title": "蒙古語語音輸出（TTS）",
+      "feature_tts_desc": "⭐ 市面上罕見的功能 — 即時聽到準確蒙古語發音，連眾多翻譯APP都做不到",
+      "feature_optimization_title": "中亞地區深度優化",
+      "feature_optimization_desc": "專門針對蒙古、哈薩克語言調校，翻譯準確度超越一般通用翻譯工具",
+      "feature_offline_title": "旅行專用設計",
+      "feature_offline_desc": "專為偏遠地區優化，即使網速小或離線也能順暢使用",
+nav_feat:"功能",nav_how:"使用方式",nav_price:"方案",nav_faq:"常見問題",nav_dl:"下載 iOS 版",
+h_badge:"AI 語音翻譯",h_title:"不止是翻譯",h_hl:"直接與當地人溝通。",
+h_sub:"用你的語言說話，聽到對方的語言。支援蒙古語、哈薩克語及 100 多種語言★ 的 AI 語音翻譯。",h_cta:"下載 iOS 版",
+s_ey:"App 預覽",s_t1:"翻譯",s_t2:"語音",s_t3:"歷史",s_t4:"收藏",
+s_c1:"說話後即時看到轉錄、翻譯結果，並以語音播放。",
+s_c2:"點擊麥克風自然說話，App 即時聆聽辨識。",
+s_c3:"所有翻譯自動儲存，隨時回顧過往對話。",
+s_c4:"將常用語句加入收藏，方便快速取用。",
+b_ey:"為何選擇 Mongol Talk",b_title:"專為被忽略的語言而生",
+b_m_t:"蒙古語和哈薩克語，不再是附屬品",
+b_m_d:"大多數翻譯 App 只把蒙古語和哈薩克語當作附加功能。Mongol Talk 專為這些語言打造，配備專屬神經語音模型和針對西里爾蒙古語及哈薩克語優化的語音辨識。",
+b_1_t:"自然的語音效果",b_1_d:"每種語言均提供男聲和女聲神經語音，可依個人節奏調整播放速度。",
+b_2_t:"隱私優先設計",b_2_d:"語音資料僅用於翻譯處理。無需建立帳號即可使用。詳情請參閱隱私政策。",
+w_ey:"使用方式",w_title:"三個步驟，一段對話",
+w_1_t:"選擇語言",w_1_d:"從 20 多種支援語言中選擇來源語言和目標語言，包含蒙古語和哈薩克語。",
+w_2_t:"自然說話",w_2_d:"點擊麥克風後自然說話，AI 語音辨識即時轉錄你的語音。",
+w_3_t:"聽取翻譯",w_3_d:"翻譯結果以自然的神經語音朗讀，可直接播放給任何人聽。",
+l_ey:"支援語言",l_title:"100+ 種語言，一個 App",l_sub:"專注於主流翻譯器未能充分支援的中亞和東亞語言。",l_more:"+ App 內查看更多",
+p_ey:"方案",p_title:"免費開始，隨時升級",p_sub:"基本功能免費使用，升級 Premium 享受完整體驗。",
+p_free:"免費",p_free_d:"以零成本開始使用核心翻譯功能。",p_f1:"語音翻譯",p_f2:"每日使用次數有限",p_f3:"標準語速",p_free_btn:"開始使用",p_fx1:"無限次翻譯",p_fx2:"全部 100+ 種語言",p_fx3:"優先 AI 處理",
+p_rec:"推薦",p_prem:"Premium",p_prem_d:"無限次翻譯、所有語言、語速調整及優先處理。提供週付、月付或年付訂閱方案。",
+p_p1:"無限次翻譯",p_p2:"全部 100+ 種語言★",p_p3:"語速可調",p_p4:"優先 AI 處理",p_prem_btn:"在 App 中查看方案",
+p_life:"終身方案",p_life_d:"一次購買，永久擁有所有 Premium 功能。",p_life_btn:"了解更多",
+p_disc:"部分功能需要 Premium 訂閱。價格會在購買前於 App 內顯示。訂閱將自動續訂，除非在當前計費週期結束前至少 24 小時取消。請透過裝置設定管理訂閱。",
+fq_ey:"常見問題",fq_title:"常見問題",
+fq_q1:"App 可以免費使用嗎？",fq_a1:"Mongol Talk 可免費下載，包含基本翻譯功能。Premium 功能（如無限次翻譯和語速調整）可透過 App 內訂閱取得。價格會在購買前於 App 內顯示。",
+fq_q2:"支援哪些語言？",fq_a2:"目前支援蒙古語、哈薩克語、英語、中文、日語、韓語、俄語、土耳其語、法語、德語、西班牙語等。完整語言清單請在 App 內查看。",
+fq_q3:"語音翻譯如何運作？",fq_a3:"App 使用 AI 語音辨識將語音轉為文字，透過神經機器翻譯轉換語言，再以語音合成朗讀結果。三個步驟在數秒內完成。",
+fq_q4:"我的資料如何處理？",fq_a4:"語音音訊會傳送至雲端 AI 服務進行翻譯處理。翻譯歷史儲存在裝置本機。完整資料處理方式請參閱隱私政策。",
+fq_q5:"如何管理或取消訂閱？",fq_a5:"可隨時透過裝置「設定 > Apple ID > 訂閱項目」管理或取消訂閱。變更會在當前計費週期結束後生效。",
+d_title:"立即體驗 Mongol Talk",d_sub:"免費下載，即刻開始翻譯。",d_ios:"從 App Store 下載",d_android:"Android 版即將推出",d_note:"需要 iOS 16.0 或更新版本。",
+ft_priv:"隱私政策",ft_terms:"使用條款",ft_support:"技術支援",ft_contact:"聯絡我們",
+ft_disc:"部分功能需要 Premium 訂閱。價格與供應狀況會在購買前於 App 內顯示。訂閱將自動續訂，除非在當前計費週期結束前至少 24 小時取消。",
+_meta_desc:"支援蒙古語、哈薩克語及 20 多種語言的 AI 語音翻譯器。自然說話，即時聽到翻譯。",_meta_title:"Mongol Talk — AI 語音翻譯"
+},
+
+"zh-CN":{
+nav_feat:"功能",nav_how:"使用方式",nav_price:"方案",nav_faq:"常见问题",nav_dl:"下载 iOS 版",
+h_badge:"AI 语音翻译",h_title:"翻译对话，",h_hl:"而非逐字。",
+h_sub:"用你的语言说话，听到对方的语言。支持蒙古语、哈萨克语及 20 多种语言的 AI 语音翻译。",h_cta:"下载 iOS 版",
+s_ey:"App 预览",s_t1:"翻译",s_t2:"语音",s_t3:"历史",s_t4:"收藏",
+s_c1:"说话后即时看到转录、翻译结果，并以语音播放。",
+s_c2:"点击麦克风自然说话，App 实时聆听识别。",
+s_c3:"所有翻译自动保存，随时回顾过往对话。",
+s_c4:"将常用语句加入收藏，方便快速取用。",
+b_ey:"为何选择 Mongol Talk",b_title:"专为被忽略的语言而生",
+b_m_t:"蒙古语和哈萨克语，不再是附属品",
+b_m_d:"大多数翻译 App 只把蒙古语和哈萨克语当作附加功能。Mongol Talk 专为这些语言打造，配备专属神经语音模型和针对西里尔蒙古语及哈萨克语优化的语音识别。",
+b_1_t:"自然的语音效果",b_1_d:"每种语言均提供男声和女声神经语音，可根据个人节奏调整播放速度。",
+b_2_t:"隐私优先设计",b_2_d:"语音数据仅用于翻译处理。无需创建账号即可使用。详情请参阅隐私政策。",
+w_ey:"使用方式",w_title:"三个步骤，一段对话",
+w_1_t:"选择语言",w_1_d:"从 20 多种支持语言中选择源语言和目标语言，包含蒙古语和哈萨克语。",
+w_2_t:"自然说话",w_2_d:"点击麦克风后自然说话，AI 语音识别实时转录你的语音。",
+w_3_t:"听取翻译",w_3_d:"翻译结果以自然的神经语音朗读，可直接播放给任何人听。",
+l_ey:"支持语言",l_title:"100+ 种语言，一个 App",l_sub:"专注于主流翻译器未能充分支持的中亚和东亚语言。",l_more:"+ App 内查看更多",
+p_ey:"方案",p_title:"免费开始，随时升级",p_sub:"基本功能免费使用，升级 Premium 享受完整体验。",
+p_free:"免费",p_free_d:"以零成本开始使用核心翻译功能。",p_f1:"语音翻译",p_f2:"每日使用次数有限",p_f3:"标准语速",p_free_btn:"开始使用",
+p_rec:"推荐",p_prem:"Premium",p_prem_d:"无限次翻译、所有语言、语速调整及优先处理。提供周付、月付或年付订阅方案。",
+p_p1:"无限次翻译",p_p2:"全部 100+ 种语言",p_p3:"语速可调",p_p4:"优先 AI 处理",p_prem_btn:"在 App 中查看方案",
+p_life:"终身方案",p_life_d:"一次购买，永久拥有所有 Premium 功能。",p_life_btn:"了解更多",
+p_disc:"部分功能需要 Premium 订阅。价格会在购买前于 App 内显示。订阅将自动续订，除非在当前计费周期结束前至少 24 小时取消。请通过设备设置管理订阅。",
+fq_ey:"常见问题",fq_title:"常见问题",
+fq_q1:"App 可以免费使用吗？",fq_a1:"Mongol Talk 可免费下载，包含基本翻译功能。Premium 功能（如无限次翻译和语速调整）可通过 App 内订阅获取。价格会在购买前于 App 内显示。",
+fq_q2:"支持哪些语言？",fq_a2:"目前支持蒙古语、哈萨克语、英语、中文、日语、韩语、俄语、土耳其语、法语、德语、西班牙语等。完整列表请在 App 内查看。",
+fq_q3:"语音翻译如何运作？",fq_a3:"App 使用 AI 语音识别将语音转为文字，通过神经机器翻译转换语言，再以语音合成朗读结果。三个步骤在数秒内完成。",
+fq_q4:"我的数据如何处理？",fq_a4:"语音音频会发送至云端 AI 服务进行翻译处理。翻译历史存储在设备本地。完整数据处理方式请参阅隐私政策。",
+fq_q5:"如何管理或取消订阅？",fq_a5:"可随时通过设备「设置 > Apple ID > 订阅」管理或取消订阅。变更会在当前计费周期结束后生效。",
+d_title:"立即体验 Mongol Talk",d_sub:"免费下载，即刻开始翻译。",d_ios:"从 App Store 下载",d_android:"Android 版即将推出",d_note:"需要 iOS 16.0 或更新版本。",
+ft_priv:"隐私政策",ft_terms:"使用条款",ft_support:"技术支持",ft_contact:"联系我们",
+ft_disc:"部分功能需要 Premium 订阅。价格与供应状况会在购买前于 App 内显示。订阅将自动续订，除非在当前计费周期结束前至少 24 小时取消。",
+_meta_desc:"支持蒙古语、哈萨克语及 20 多种语言的 AI 语音翻译器。自然说话，实时听到翻译。",_meta_title:"Mongol Talk — AI 语音翻译"
+},
+
+mn: {nav_feat: "Боломжууд", nav_how: "Заавар", nav_price: "Үнэ", nav_faq: "FAQ", nav_dl: "iOS татах", h_sub: "Өөрийн хэлээр ярьж, тэдний хэлээр сонс. Монгол, Хасаг болон 100 гаруй хэлний AI ярианы орчуулга.", b_ey: "Яагаад Mongol Talk гэж?", b_title: "Бусдын анхаараагүй хэлнүүдэд зориулсан", b_m_t: "Монгол ба Хасаг хэл гол цөм нь", b_m_d: "Бид Mongol Talk-ийг тусгайлан эдгээр хэлнүүдэд зориулж бүтээсэн.", b_n_t: "Байгалийн мэт дуу хоолой", b_n_d: "Хэл бүрт эрэгтэй, эмэгтэй хиймэл дуу хоолой бий.", b_p_t: "Нууцлал хамгаалагдсан", b_p_d: "Дуут бичлэгийг зөвхөн орчуулгад ашиглана.", w_ey: "Хэрхэн ажилладаг вэ?", w_title: "Гурван алхам, нэг харилцаа", w_1_t: "Хэлээ сонгоно", w_1_d: "Монгол, Хасаг хэл оролцуулаад 100 гаруй хэлнээс сонгоно.", w_2_t: "Байгалийн мэт ярь", w_2_d: "Микрофон дээр дараад ярь.", w_3_t: "Орчуулгыг сонс", w_3_d: "Орчуулга нь байгалийн мэт сонсогдох хиймэл дуу хоолойгоор уншигдана.", l_ey: "Хэлнүүд", l_title: "100+ хэл, нэг апп", l_sub: "Төв ба Зүүн Азийн хэлнүүдэд түлхүү анхаарсан.", l_ui_title: "Апп-ын цэсний хэлнүүд", t_ey: "Аялагчдын дуу хоолой", t_title: "Аялагчдын санал болгож буй", t1_text: "Монголоор үнэхээр ярьдаг апп оллоо! Аялалаар явахад маш хэрэгтэй юм байна.", t1_name: "Алекс, адал явдалд дурлагч", t2_text: "Дуу хоолой нь маш байгалийн мэт. Хасагт нутгийн хүмүүстэй ойлголцоход асуудал алга.", t2_name: "Сара, дижитал нүүдэлчин", t3_text: "Энэ бүс нутагт энэ апп бусад орчуулагчаас хамаагүй дээр.", t3_name: "Кен, аялагч", p_ey: "Үнэ", p_title: "Үнэгүй эхэлж, хүссэн үедээ сайжруул", p_sub: "Үндсэн боломжууд үнэгүй.", p1_t: "Үнэгүй", p1_d: "Үндсэн орчуулгын боломжуудыг үнэгүй ашигла.", p1_b: "Эхлэх", p2_t: "Premium", p2_d: "Хязгааргүй орчуулга, бүх хэл, хурд тохируулах.", p2_b: "Апп дотор үзэх", p3_t: "Lifetime", p3_d: "Нэг удаа худалдаж авна.", p3_b: "Дэлгэрэнгүй", f_ey: "FAQ", f_title: "Түгээмэл асуултууд", d_title: "Өнөөдөр Mongol Talk-ийг туршаад үзээрэй", d_apple: "App Store-оос татах", d_android: "Android хувилбар тун удахгүй", d_note: "iOS 16.0 буюу түүнээс дээш хувилбар шаардлагатай.", ft_priv: "Нууцлалын бодлого", ft_terms: "Ашиглах нөхцөл", ft_support: "Дэмжлэг", ft_contact: "Холбоо барих", ft_disc: "Зарим боломжууд Premium захиалга шаардана.", _meta_desc: "Монгол, Хасаг болон 100 гаруй хэлний AI дуут орчуулагч.", _meta_title: "Mongol Talk — AI дуут орчуулагч", compare_title: "Бусад апп-уудын хийж чадахгүйг бид хийдэг", compare_desc: "Ихэнх орчуулгын апп-ууд Монгол хэлний яриаг дэмждэггүй."},
+
+kk: {nav_feat: "Мүмкіндіктер", nav_how: "Нұсқаулық", nav_price: "Бағасы", nav_faq: "FAQ", nav_dl: "iOS жүктеу", h_sub: "Өз тіліңізде сөйлеп, олардың тілінде естіңіз. Моңғол, қазақ және 100-ден астам тілдерге арналған AI дауыстық аудармасы.", b_ey: "Неліктен Mongol Talk?", b_title: "Басқалар назар аудармайтын тілдерге арналған", b_m_t: "Моңғол және қазақ тілдері - басты назарда", b_m_d: "Аударма қолданбаларының көбі моңғол және қазақ тілдеріне жете көңіл бөлмейді.", b_n_t: "Табиғи дыбысталатын дауыстар", b_n_d: "Әр тілде ер және әйел дауыстары бар.", b_p_t: "Құпиялылыққа кепілдік", b_p_d: "Дауыс тек аударма үшін өңделеді.", w_ey: "Жұмыс принципі", w_title: "Үш қадам, бір сөйлесу", w_1_t: "Тілдерді таңдаңыз", w_1_d: "Моңғол және қазақ тілдерін қоса алғанда, 100-ден астам тілден таңдаңыз.", w_2_t: "Еркін сөйлеңіз", w_2_d: "Микрофонды басып сөйлеңіз.", w_3_t: "Аударманы тыңдаңыз", w_3_d: "Аударма табиғи дауыспен оқылады.", l_ey: "Тілдер", l_title: "100+ тіл, бір қолданба", l_sub: "Орталық және Шығыс Азия тілдеріне басымдық берілген.", l_ui_title: "Интерфейс тілдері", t_ey: "Саяхатшылар пікірі", t_title: "Саяхатшылар ұсынады", t1_text: "Моңғол тілінде шынымен сөйлейтін қолданба таптым!", t1_name: "Алекс, саяхатшы", t2_text: "Дауысы өте табиғи естіледі. Қазақстанда жергілікті халықпен түсінісуге көмектесті.", t2_name: "Сара, цифрлық көшпенді", t3_text: "Бұл өңірде бұл қолданба басқалардан әлдеқайда жақсы.", t3_name: "Кен, саяхатшы", p_ey: "Бағасы", p_title: "Тегін бастап, кез келген уақытта жаңартыңыз", p_sub: "Негізгі функциялар тегін.", p1_t: "Тегін", p1_d: "Негізгі аударма мүмкіндіктерін тегін пайдаланыңыз.", p1_b: "Бастау", p2_t: "Premium", p2_d: "Шексіз аударма, барлық тілдер.", p2_b: "Қолданбадан көру", p3_t: "Lifetime", p3_d: "Бір реттік сатып алу.", p3_b: "Толығырақ", f_ey: "FAQ", f_title: "Жиі қойылатын сұрақтар", d_title: "Mongol Talk-ты бүгін байқап көріңіз", d_apple: "App Store-дан жүктеу", d_android: "Android нұсқасы жақында", d_note: "iOS 16.0 немесе одан жаңа нұсқасы қажет.", ft_priv: "Құпиялылық саясаты", ft_terms: "Пайдалану шарттары", ft_support: "Қолдау", ft_contact: "Байланыс", ft_disc: "Кейбір функциялар Premium жазылымды қажет етеді.", _meta_desc: "Моңғол, қазақ және 100-ден астам тілдерге арналған AI дауыстық аудармашысы.", _meta_title: "Mongol Talk — AI дауыстық аудармашысы", compare_title: "Басқа қолданбалар істей алмайтынын біз істейміз", compare_desc: "Көптеген аударма қолданбалары моңғол тілін қолдамайды."},
+
+ko: {nav_feat: "주요 기능", nav_how: "사용 방법", nav_price: "가격 안내", nav_faq: "FAQ", nav_dl: "iOS 다운로드", h_sub: "나의 언어로 말하고 상대방의 언어로 듣으세요. 몽골어, 카자흐어 및 100개 이상의 언어를 지원하는 AI 음성 번역.", b_ey: "Mongol Talk인 이유", b_title: "주류 앱이 간과하는 언어를 위해 설계되었습니다", b_m_t: "몽골어와 카자흐어에 집중", b_m_d: "대부분의 번역 앱에서 몽골어와 카자흐어는 뒷전입니다. Mongol Talk는 이러한 언어들을 위해 특별히 제작되었습니다.", b_n_t: "자연스러운 목소리", b_n_d: "각 언어별로 남녀 신경망 음성을 제공합니다. 재생 속도를 조절하여 나에게 맞출 수 있습니다.", b_p_t: "프라이버시 보호", b_p_d: "음성 데이터는 번역 목적으로만 처리됩니다.", w_ey: "작동 원리", w_title: "세 단계로 끝내는 원활한 대화", w_1_t: "언어 선택", w_1_d: "몽골어, 카자흐어를 포함한 100개 이상의 언어 중에서 선택하세요.", w_2_t: "자연스럽게 말하기", w_2_d: "마이크 버튼을 누르고 말씀하세요.", w_3_t: "번역 결과 듣기", w_3_d: "자연스러운 목소리로 번역 결과가 낭독됩니다.", l_ey: "지원 언어", l_title: "100개 이상의 언어를 하나의 앱에서", l_sub: "주류 번역기에서 충분히 지원되지 않는 중앙아시아 및 동아시아 언어에 집중합니다.", l_ui_title: "앱 인터페이스 언어", t_ey: "여행자 후기", t_title: "여행자들이 추천하는 이유", t1_text: "드디어 진짜 몽골어가 통하는 앱을 찾았어요!", t1_name: "Alex (모험가)", t2_text: "음성 출력이 아주 자연스러워요. 카자흐스탄 현지인들과 소통할 때 전혀 문제 없었습니다.", t2_name: "Sarah (디지털 노마드)", t3_text: "이 지역에서는 다른 앱보다 이 앱이 훨씬 잘 작동해요.", t3_name: "Ken (여행 마니아)", p_ey: "가격", p_title: "무료로 시작하고 언제든 업그레이드하세요", p_sub: "기본 기능은 무료로 제공됩니다.", p1_t: "무료 버전", p1_d: "핵심 번역 기능을 무료로 이용하세요.", p1_b: "시작하기", p2_t: "Premium 버전", p2_d: "무제한 번역, 전 언어 지원, 속도 조절, 우선 처리.", p2_b: "앱에서 요금제 보기", p3_t: "평생 소장", p3_d: "일회성 구매로 모든 Premium 기능을 평생 이용하세요.", p3_b: "더 알아보기", f_ey: "FAQ", f_title: "자주 묻는 질문", d_title: "지금 Mongol Talk를 체험해 보세요", d_apple: "App Store에서 다운로드", d_android: "Android 버전 출시 예정", d_note: "iOS 16.0 이상 버전이 필요합니다.", ft_priv: "개인정보 처리방침", ft_terms: "이용 약관", ft_support: "지원", ft_contact: "문의하기", ft_disc: "일부 기능은 Premium 구독이 필요합니다.", _meta_desc: "몽골어, 카자흐어 및 100개 이상의 언어를 지원하는 AI 음성 번역기.", _meta_title: "Mongol Talk — AI 음성 번역기", compare_title: "다른 앱은 못하지만, 우리는 합니다", compare_desc: "많은 번역 앱이 몽골어 음성 출력을 지원하지 않습니다."},
+
+ja: {nav_feat: "特徴", nav_how: "使い方", nav_price: "料金", nav_faq: "FAQ", nav_dl: "iOS版ダウンロード", h_sub: "あなたの言葉で話し、相手の言葉で聞く。モンゴル語、カザフ語、その他100以上の言語に対応したAI音声翻訳。", b_ey: "Mongol Talkが選ばれる理由", b_title: "主流アプリが見落としがちな言語のために", b_m_t: "モンゴル語とカザフ語を最優先に", b_m_d: "多くの翻訳アプリでは、モンゴル語やカザフ語は二の次です。Mongol Talkはこれらの言語に特化して構築されています。", b_n_t: "自然な音声", b_n_d: "各言語に男女のニューラル音声を用意。自分のペースに合わせて再生速度を調整できます。", b_p_t: "プライバシー重視", b_p_d: "音声データは翻訳目的のみに使用されます。", w_ey: "仕組み", w_title: "3つのステップでスムーズな会話を", w_1_t: "言語を選択", w_1_d: "モンゴル語やカザフ語を含む100以上の対応言語から選択します。", w_2_t: "自然に話す", w_2_d: "マイクをタップして話しかけるだけ。", w_3_t: "翻訳を聞く", w_3_d: "翻訳結果は、自然な響きのニューラル音声で読み上げられます。", l_ey: "対応言語", l_title: "100以上の言語を1つのアプリで", l_sub: "主流の翻訳アプリでは十分にサポートされていない中央アジアや東アジアの言語に焦点を当てています。", l_ui_title: "アプリのインターフェース言語", t_ey: "旅行者の声", t_title: "旅行者に選ばれています", t1_text: "ついにモンゴル語が本当に通じるアプリを見つけました！", t1_name: "Alex（冒険好き）", t2_text: "音声出力がとても自然です。カザフスタンで現地の人とのコミュニケーションに全く問題ありませんでした。", t2_name: "Sarah（デジタルノマド）", t3_text: "この地域では、一般的な翻訳アプリよりもこのアプリの方がずっと使えます。", t3_name: "Ken（頻繁に旅行する方）", p_ey: "料金プラン", p_title: "無料で開始、いつでもアップグレード", p_sub: "基本機能は無料です。", p1_t: "無料版", p1_d: "基本的な翻訳機能を無料で利用できます。", p1_b: "今すぐ開始", p2_t: "Premiumプラン", p2_d: "無制限の翻訳、全言語対応、語速調整、優先処理。", p2_b: "アプリでプランを見る", p3_t: "買い切り版", p3_d: "一度の購入で、全てのPremium機能を永久に利用できます。", p3_b: "詳細を見る", f_ey: "よくある質問", f_title: "よくある質問と回答", d_title: "今すぐMongol Talkを試す", d_apple: "App Storeでダウンロード", d_android: "Android版は近日公開予定", d_note: "iOS 16.0以降が必要です。", ft_priv: "プライバシーポリシー", ft_terms: "利用規約", ft_support: "サポート", ft_contact: "お問い合わせ", ft_disc: "一部の機能にはPremiumプランへの加入が必要です。", _meta_desc: "モンゴル語、カザフ語、その他100以上の言語に対応したAI音声翻訳。", _meta_title: "Mongol Talk — AI音声翻訳機", compare_title: "他のアプリにはできないことを、私たちが実現します", compare_desc: "多くの翻訳アプリはモンゴル語の音声出力をサポートしていません。"}
+};
+
+T["zh-HK"]=T["zh-TW"];T["zh-MO"]=T["zh-TW"];T["zh-SG"]=T["zh-CN"];
+
+const LANG_LABELS={en:"EN","zh-TW":"繁中","zh-CN":"简中",mn:"МН",kk:"ҚА",ko:"한국",ja:"日本"};
+
+function detect(){
+  const s=localStorage.getItem("mt_lang");if(s&&T[s])return s;
+  const n=(navigator.language||"en").toLowerCase();
+  if(/^zh-(tw|hant)/.test(n)||n==="zh-hk"||n==="zh-mo")return"zh-TW";
+  if(/^zh/.test(n))return"zh-CN";
+  if(n.startsWith("mn"))return"mn";if(n.startsWith("kk"))return"kk";
+  if(n.startsWith("ko"))return"ko";if(n.startsWith("ja"))return"ja";
+  return"en";
+}
+
+function apply(lang){
+  const s=T[lang]||T.en,fb=T.en;
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k=el.getAttribute("data-i18n");
+    el.textContent=s[k]||fb[k]||el.textContent;
+  });
+  document.getElementById("curLang").textContent=LANG_LABELS[lang]||lang;
+  document.querySelectorAll(".lang-opt").forEach(o=>o.classList.toggle("active",o.dataset.lang===lang));
+  document.title=s._meta_title||fb._meta_title;
+  const md=document.querySelector('meta[name="description"]');if(md)md.content=s._meta_desc||fb._meta_desc;
+  const og1=document.querySelector('meta[property="og:title"]');if(og1)og1.content=s._meta_title||fb._meta_title;
+  const og2=document.querySelector('meta[property="og:description"]');if(og2)og2.content=s._meta_desc||fb._meta_desc;
+  localStorage.setItem("mt_lang",lang);window._curLang=lang;
+  const at=document.querySelector('.showcase-tab.active');if(at)switchScreen(at.dataset.screen);
+}
+
+function switchScreen(name){
+  const d=SCREENS[name];if(!d)return;
+  const img=document.getElementById("scImg"),lbl=document.getElementById("scLbl"),
+        hint=document.getElementById("scHint"),cap=document.getElementById("scCap");
+  img.classList.remove("img-err");img.src=d.img;
+  lbl.textContent=d.label;hint.textContent=d.hint+" · 390×844";
+  const lang=window._curLang||"en",s=T[lang]||T.en;
+  cap.textContent=s[d.cap]||T.en[d.cap]||"";
+  document.querySelectorAll(".showcase-tab").forEach(t=>{
+    const a=t.dataset.screen===name;t.classList.toggle("active",a);t.setAttribute("aria-selected",a);
+  });
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  apply(detect());
+  const nav=document.getElementById("nav");
+  window.addEventListener("scroll",()=>nav.classList.toggle("scrolled",scrollY>30),{passive:true});
+  document.getElementById("ham").addEventListener("click",()=>document.getElementById("navLinks").classList.toggle("open"));
+  document.querySelectorAll("#navLinks a:not(.nav-cta)").forEach(a=>a.addEventListener("click",()=>document.getElementById("navLinks").classList.remove("open")));
+  const lb=document.getElementById("langBtn"),ld=document.getElementById("langDd");
+  lb.addEventListener("click",e=>{e.stopPropagation();const o=ld.classList.toggle("open");lb.setAttribute("aria-expanded",o)});
+  document.querySelectorAll(".lang-opt").forEach(o=>o.addEventListener("click",()=>{apply(o.dataset.lang);ld.classList.remove("open");lb.setAttribute("aria-expanded",false)}));
+  document.addEventListener("click",()=>{ld.classList.remove("open");lb.setAttribute("aria-expanded",false)});
+  document.querySelectorAll(".showcase-tab").forEach(t=>t.addEventListener("click",()=>switchScreen(t.dataset.screen)));
+  if(!matchMedia("(prefers-reduced-motion:reduce)").matches){
+    const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("visible")}),{threshold:.08});
+    document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
+  }else{document.querySelectorAll(".reveal").forEach(el=>el.classList.add("visible"))}
+  document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{
+    const t=document.querySelector(a.getAttribute("href"));if(t){e.preventDefault();t.scrollIntoView({behavior:"smooth"})}
+  }));
+  document.querySelectorAll('.phone-screen img').forEach(img=>{
+    img.addEventListener('error',()=>img.classList.add('img-err'));
+    img.addEventListener('load',()=>img.classList.remove('img-err'));
+  });
+});
+</script>
+
+<script>
+// ===== CAROUSEL =====
+(function(){
+    let cur = 0;
+    const total = 4;
+    const track = document.getElementById('carouselTrack');
+    const dots = document.querySelectorAll('.cdot');
+    
+    function update() {
+        if (!track) return;
+        track.style.transform = `translateX(-${cur * 100}%)`;
+        dots.forEach((d,i) => d.classList.toggle('active', i === cur));
+    }
+    
+    window.goSlide = function(n) {
+        cur = Math.max(0, Math.min(n, total - 1));
+        update();
+    };
+    
+    window.slideCarousel = function(dir) {
+        cur = (cur + dir + total) % total;
+        update();
+    };
+    
+    const prev = document.getElementById('prevBtn');
+    const next = document.getElementById('nextBtn');
+    if (prev) prev.addEventListener('click', () => slideCarousel(-1));
+    if (next) next.addEventListener('click', () => slideCarousel(1));
+    
+    // Touch/swipe support
+    let startX = 0;
+    const vp = track && track.parentElement;
+    if (vp) {
+        vp.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+        vp.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - startX;
+            if (Math.abs(dx) > 40) slideCarousel(dx < 0 ? 1 : -1);
+        }, {passive:true});
+    }
+    
+    // Auto-advance
+    setInterval(() => slideCarousel(1), 4000);
+})();
+</script>
+</body>
+</html>
